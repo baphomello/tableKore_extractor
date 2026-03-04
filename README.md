@@ -12,10 +12,11 @@ No more copy-pasting. No more "Unknown Item (12345)". Every update, just run one
 
 ## What it generates
 
-| File                    | Description                                       |
-| ----------------------- | ------------------------------------------------- |
-| `items.txt`             | Item IDs and display names in OpenKore format     |
-| `itemsdescriptions.txt` | Full item descriptions, clean and color-code-free |
+| File                     | Description                                       |
+| ------------------------ | ------------------------------------------------- |
+| `items.txt`              | Item IDs and display names in OpenKore format     |
+| `itemsdescriptions.txt`  | Full item descriptions, clean and color-code-free |
+| `itemslotcounttable.txt` | Number of card slots per equippable item          |
 
 ---
 
@@ -29,8 +30,8 @@ No more copy-pasting. No more "Unknown Item (12345)". Every update, just run one
 ## Usage
 
 ```bash
-# Generate both files at once (recommended)
-python main.py --items --descriptions
+# Generate all files at once (recommended)
+python main.py --items --descriptions --slots
 
 # Generate only items.txt
 python main.py --items
@@ -38,8 +39,11 @@ python main.py --items
 # Generate only itemsdescriptions.txt
 python main.py --descriptions
 
+# Generate only itemslotcounttable.txt
+python main.py --slots
+
 # Specify a custom path to iteminfo.lub
-python main.py --items --descriptions --input "C:/Ragnarok/System/iteminfo.lub"
+python main.py --items --descriptions --slots --input "C:/Ragnarok/System/iteminfo.lub"
 ```
 
 The generated files will appear in the same directory. Copy them to your OpenKore `tables/<server>/` folder.
@@ -55,7 +59,24 @@ RO clients store item data in a Lua file called `iteminfo.lub` inside GRF file o
 ```
 iteminfo.lub  →  parser.py  →  writers.py  →  items.txt
                                            →  itemsdescriptions.txt
+                                           →  itemslotcounttable.txt
 ```
+
+---
+
+## Getting itemslots.txt from the GRF
+
+The `itemslots.txt` file — which tells OpenKore which equipment slot each item occupies (weapon, armor, headgear, etc.) — cannot be generated from `iteminfo.lub`. This data lives server-side and is not exposed to the client.
+
+However, most RO clients ship a file called `data/itemslottable.txt` inside their GRF that contains exactly this information. To extract it:
+
+1. Open **GRF Editor** and load your client's `data.grf`
+2. Search for `data/itemslottable.txt`
+3. Right-click → **Extract**
+4. Rename the extracted file to `itemslots.txt`
+5. Copy it to `tables/<server>/` in your OpenKore installation
+
+This file already uses the same `ID#value#` format as OpenKore, so no conversion is needed.
 
 ---
 
@@ -65,7 +86,7 @@ iteminfo.lub  →  parser.py  →  writers.py  →  items.txt
 iteminfo-tools/
 ├── main.py      # CLI entry point — run this
 ├── parser.py    # Reads iteminfo.lub, returns Item dataclasses
-└── writers.py   # Writes items.txt and itemsdescriptions.txt
+└── writers.py   # Writes items.txt, itemsdescriptions.txt and itemslotcounttable.txt
 ```
 
 Each file has a single responsibility and can be imported independently if you want to integrate the parser into a larger project.
@@ -76,7 +97,7 @@ Each file has a single responsibility and can be imported independently if you w
 
 1. Open GRF Editor (or your preferred extractor)
 2. Locate `System/iteminfo.lub` in your client folder
-3. Run `python main.py --items --descriptions`
+3. Run `python main.py --items --descriptions --slots`
 4. Copy the output files to `tables/<server>/` in your OpenKore installation
 
 That's it.
