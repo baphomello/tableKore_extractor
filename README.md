@@ -64,33 +64,19 @@ iteminfo.lub  →  parser.py  →  writers.py  →  items.txt
 
 ---
 
-## Getting itemslots.txt from the GRF
+## Getting files from the GRF
 
-The `itemslots.txt` file — which tells OpenKore which equipment slot each item occupies (weapon, armor, headgear, etc.) — cannot be generated from `iteminfo.lub`. This data lives server-side and is not exposed to the client.
+Some table files cannot be generated from `iteminfo.lub` — their data is stored directly inside the client's GRF and can be extracted as-is, with no conversion needed. Use **GRF Editor** to open each `.grf` file and extract them.
 
-However, most RO clients ship a file called `data/itemslottable.txt` inside their GRF that contains exactly this information. To extract it:
+> **Tip:** Servers often ship multiple GRF files (e.g. `data.grf`, `patch.grf`). Always check all of them — patch GRFs load after `data.grf` and override its contents, so they tend to have the most up-to-date and server-specific data. If a file exists in both, prefer the one from the patch GRF.
 
-1. Open **GRF Editor** and load your client's `data.grf`
-2. Search for `data/itemslottable.txt`
-3. Right-click → **Extract**
-4. Rename the extracted file to `itemslots.txt`
-5. Copy it to `tables/<server>/` in your OpenKore installation
+| OpenKore file      | GRF path                 | Notes                                         |
+| ------------------ | ------------------------ | --------------------------------------------- |
+| `itemslots.txt`    | `data/itemslottable.txt` | Rename after extracting                       |
+| `maps.txt`         | `data/mapnametable.txt`  | Rename after extracting                       |
+| `resnametable.txt` | `data/resnametable.txt`  | Merge from all GRFs if found in more than one |
 
-This file already uses the same `ID#value#` format as OpenKore, so no conversion is needed.
-
----
-
-## Getting maps.txt from the GRF
-
-The `maps.txt` file — which maps internal map filenames to their display names — can be extracted directly from the GRF as well. Look for `data/mapnametable.txt` inside your client's GRF:
-
-1. Open **GRF Editor** and load your client's GRF (check additional GRFs too, as some servers ship an updated version in a separate patch file)
-2. Search for `data/mapnametable.txt`
-3. Right-click → **Extract**
-4. Rename the extracted file to `maps.txt`
-5. Copy it to `tables/<server>/` in your OpenKore installation
-
-The file uses the format `mapname.rsw#Display Name#` per line, which OpenKore reads directly. Comments (lines starting with `//`) and blank lines are ignored automatically.
+All three files use the same `value#value#` format that OpenKore reads directly. Comments (lines starting with `//`) and blank lines are ignored automatically.
 
 ---
 
@@ -112,7 +98,8 @@ Each file has a single responsibility and can be imported independently if you w
 1. Open GRF Editor (or your preferred extractor)
 2. Locate `System/iteminfo.lub` in your client folder
 3. Run `python main.py --items --descriptions --slots`
-4. Copy the output files to `tables/<server>/` in your OpenKore installation
+4. Extract `itemslottable.txt`, `mapnametable.txt` and `resnametable.txt` from the GRF and rename/merge as needed
+5. Copy all output files to `tables/<server>/` in your OpenKore installation
 
 That's it.
 
