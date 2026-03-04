@@ -7,12 +7,14 @@ from pathlib import Path
 class Item:
     id:          int
     name:        str
+    slot_count:  int       = 0
     description: list[str] = field(default_factory=list)
 
 
 class ItemInfoParser:
     _BLOCK       = re.compile(r'\[(\d+)\]\s*=\s*\{')
     _NAME        = re.compile(r'identifiedDisplayName\s*=\s*"([^"]+)"')
+    _SLOT        = re.compile(r'slotCount\s*=\s*(\d+)')
     _DESC_BLOCK  = re.compile(r'\bidentifiedDescriptionName\s*=\s*\{([^}]*)\}', re.DOTALL)
     _DESC_LINE   = re.compile(r'"([^"]*)"')
 
@@ -31,11 +33,13 @@ class ItemInfoParser:
                 continue
 
             desc_match = self._DESC_BLOCK.search(block)
+            slot_match = self._SLOT.search(block)
             desc_lines = self._DESC_LINE.findall(desc_match.group(1)) if desc_match else []
 
             items.append(Item(
                 id          = item_id,
                 name        = name_match.group(1).strip(),
+                slot_count  = int(slot_match.group(1)) if slot_match else 0,
                 description = desc_lines,
             ))
 

@@ -18,7 +18,7 @@ import argparse
 from pathlib import Path
 
 from parser  import ItemInfoParser
-from writers import write_items, write_descriptions
+from writers import write_items, write_descriptions, write_slot_count
 
 DEFAULT_INPUT = Path('C:/Ragnarok/System/iteminfo.lub')
 
@@ -28,6 +28,7 @@ def parse_args():
     p.add_argument('--input',        '-i', type=Path, default=Path('iteminfo.lub'))
     p.add_argument('--items',        '-n', action='store_true', help='Generate items.txt')
     p.add_argument('--descriptions', '-d', action='store_true', help='Generate itemsdescriptions.txt')
+    p.add_argument('--slots',        '-s', action='store_true', help='Generate itemslotcounttable.txt')
     return p.parse_args()
 
 
@@ -43,8 +44,8 @@ def resolve_input(path: Path) -> Path:
 def main():
     args = parse_args()
 
-    if not args.items and not args.descriptions:
-        print("Nothing to do. Use --items, --descriptions, or both.")
+    if not any([args.items, args.descriptions, args.slots]):
+        print("Nothing to do. Use --items, --descriptions, --slots, or any combination.")
         return
 
     items = ItemInfoParser(resolve_input(args.input)).parse()
@@ -55,6 +56,9 @@ def main():
 
     if args.descriptions:
         write_descriptions(items, 'itemsdescriptions.txt')
+
+    if args.slots:
+        write_slot_count(items, 'itemslotcounttable.txt')
 
 
 if __name__ == '__main__':
