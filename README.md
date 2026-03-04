@@ -77,6 +77,26 @@ skillinfolist.lub →  skillParser.py →  writers.py  →  skillssp.txt
 
 ---
 
+## Fixing unidentified item names
+
+Private servers often introduce new items before their client data is fully populated. When that happens, `iteminfo.lub` only has a generic placeholder like "Unidentified Weapon" or "Unidentified Armor" instead of the real name — which means OpenKore can't identify those items correctly.
+
+`fixUnidentified.py` exists to bridge that gap. It compares your server's `items.txt` against a reference file from another server (such as iRO) and replaces every placeholder name with the proper one wherever a match is found. Items that are truly exclusive to your server and unknown to the reference are left untouched.
+
+This is not a one-time task. As servers add new items weekly, running `fixUnidentified.py` after each `main.py` run is part of the regular maintenance workflow for keeping OpenKore tables accurate.
+
+```bash
+python fixUnidentified.py --source items_myserver.txt --reference items_iRO.txt --output items.txt
+```
+
+| Flag       | Description                      | Default          |
+| ---------- | -------------------------------- | ---------------- |
+| `--laro`   | Your server's `items.txt`        | `items_laRO.txt` |
+| `--iro`    | Reference `items.txt` (e.g. iRO) | `items_iRO.txt`  |
+| `--output` | Fixed output file                | `items.txt`      |
+
+---
+
 ## Getting files from the GRF
 
 Some table files cannot be generated from Lua sources — their data is stored directly inside the client's GRF and can be extracted as-is, with no conversion needed. Use **GRF Editor** to open each `.grf` file and extract them.
@@ -97,25 +117,25 @@ All three files use the same `value#value#` format that OpenKore reads directly.
 
 ```
 tableKore_extractor/
-├── main.py          # CLI entry point — run this
-├── itemParser.py    # Reads iteminfo.lub, returns Item dataclasses
-├── skillParser.py   # Reads skillinfolist.lub, returns skill SP data
-└── writers.py       # Writes all output table files
+├── main.py              # CLI entry point — run this
+├── itemParser.py        # Reads iteminfo.lub, returns Item dataclasses
+├── skillParser.py       # Reads skillinfolist.lub, returns skill SP data
+├── writers.py           # Writes all output table files
+└── fixUnidentified.py   # Weekly maintenance: patches items.txt using a reference server
 ```
 
 Each file has a single responsibility and can be imported independently if you want to integrate the parsers into a larger project.
 
 ---
 
-## After a server update
+## Weekly maintenance workflow
 
-1. Open GRF Editor (or your preferred extractor)
-2. Locate `System/iteminfo.lub` and `data/.../skillinfolist.lub` in your client
-3. Run `python main.py --items --descriptions --slots --skillssp`
-4. Extract `itemslottable.txt`, `mapnametable.txt` and `resnametable.txt` from the GRF and rename/merge as needed
-5. Copy all output files to `tables/<server>/` in your OpenKore installation
+After each server update that adds new items:
 
-That's it.
+1. Extract the latest `iteminfo.lub` from your client's GRF or `System/` folder
+2. Run `python main.py --items --descriptions --slots --skillssp`
+3. Run `python fixUnidentified.py --source items_myserver.txt --reference items_iRO.txt --output items.txt`
+4. Copy the output files to `tables/<server>/` in your OpenKore installation
 
 ---
 
